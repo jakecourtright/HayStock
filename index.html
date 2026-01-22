@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HayStock | Premium Inventory for Farmers</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>HayStock</h1>
+                <p style="color: var(--text-dim); font-size: 0.85rem; font-weight: 500;">Inventory Management</p>
+            </div>
+            <div
+                style="background: var(--bg-surface); padding: 0.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page">
+            <div class="glass-card">
+                <span class="stat-label">Active Inventory</span>
+                <div id="total-stock" class="stat-value">0</div>
+                <p style="color: var(--text-dim); font-size: 0.85rem;">Total units across all stacks</p>
+                <div style="position: absolute; top: -20px; right: -20px; opacity: 0.05;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18" />
+                        <path d="M18 17V9" />
+                        <path d="M13 17V5" />
+                        <path d="M8 17v-3" />
+                    </svg>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;" class="mt-2">
+                <button class="btn btn-primary" onclick="UI.showPage('log-entry')" style="flex: 1;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    New Log
+                </button>
+            </div>
+
+            <h2 class="mt-2 mb-1" style="font-size: 1.25rem;">Recent Activity</h2>
+            <div id="recent-activity" class="activity-list">
+                <!-- Activity items will be injected here -->
+            </div>
+        </div>
+
+        <!-- Stacks Page -->
+        <div id="manage-stacks" class="page hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-1">
+                <h2 style="font-size: 1.5rem; margin: 0;">Stacks</h2>
+                <button class="btn btn-primary"
+                    onclick="document.getElementById('stack-creation-form').classList.toggle('hidden')"
+                    style="padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.85rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    New Stack
+                </button>
+            </div>
+
+            <div id="stack-creation-form" class="hidden">
+                <form id="stack-form" class="glass-card mb-2">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Stack
+                                / Lot ID</label>
+                            <input type="text" name="name" placeholder="e.g. Stack 2024-A" required>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                            <div>
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Commodity</label>
+                                <select name="commodity" required>
+                                    <option value="Alfalfa">Alfalfa</option>
+                                    <option value="Timothy">Timothy</option>
+                                    <option value="Bermuda">Bermuda</option>
+                                    <option value="Oat Hay">Oat Hay</option>
+                                    <option value="Orchard Grass">Orchard Grass</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Bale
+                                    Size</label>
+                                <select name="baleSize">
+                                    <option value="Small Square">Small Square</option>
+                                    <option value="Large Square">Large Square</option>
+                                    <option value="Round">Round</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Quality</label>
+                                <select name="quality">
+                                    <option value="Premium">Premium</option>
+                                    <option value="#1">#1</option>
+                                    <option value="Feeder">Feeder</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Base
+                                Price / Unit</label>
+                            <input type="number" name="basePrice" placeholder="0.00" step="0.01">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
+                            <button type="submit" class="btn btn-primary">Save Stack</button>
+                            <button type="button" id="cancel-stack-edit" class="btn btn-secondary"
+                                onclick="UI.cancelEditStack(); document.getElementById('stack-creation-form').classList.add('hidden')">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="stacks-list" class="activity-list">
+                <!-- Stack cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- Log Entry Page -->
+        <div id="log-entry" class="page hidden">
+            <h2 class="mb-1" style="font-size: 1.5rem;">New Record</h2>
+            <form id="transaction-form" class="glass-card">
+                <div style="display: grid; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Activity
+                                Type</label>
+                            <select name="type" required>
+                                <option value="production">Production (Baled)</option>
+                                <option value="purchase">Purchase (Bought)</option>
+                                <option value="sale">Sale (Sold)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Storage
+                                Location</label>
+                            <select name="locationId" required>
+                                <!-- Options injected by JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Select
+                            Stack (Lot #)</label>
+                        <select name="stackId" required>
+                            <!-- Options injected by JS -->
+                        </select>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Quantity</label>
+                            <input type="number" name="amount" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Unit</label>
+                            <select name="unit">
+                                <option value="bales">Bales</option>
+                                <option value="tons">Tons</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Entity
+                            (Field, Customer, Vendor)</label>
+                        <input type="text" name="entity" placeholder="e.g. Smith Ranch" required>
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Custom
+                            Price (optional)</label>
+                        <input type="number" name="price" placeholder="Use stack base price if empty" step="0.01">
+                    </div>
+                    <div style="display: grid; gap: 0.75rem; margin-top: 1rem;">
+                        <button type="submit" class="btn btn-primary">Save Transaction</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="UI.showPage('dashboard')">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Locations Page -->
+        <div id="inventory" class="page hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;" class="mb-1">
+                <h2 style="font-size: 1.5rem; margin: 0;">Locations</h2>
+                <button class="btn btn-primary"
+                    onclick="document.getElementById('location-creation-form').classList.toggle('hidden')"
+                    style="padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.85rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    New Location
+                </button>
+            </div>
+
+            <div id="location-creation-form" class="hidden">
+                <form id="location-form" class="glass-card mb-2">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Location
+                                Name</label>
+                            <input type="text" name="name" placeholder="e.g. Barn A" required>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                            <div>
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Capacity</label>
+                                <input type="number" name="capacity" placeholder="0" required>
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim);">Unit</label>
+                                <select name="unit">
+                                    <option value="bales">Bales</option>
+                                    <option value="tons">Tons</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
+                            <button type="submit" class="btn btn-primary">Save Location</button>
+                            <button type="button" id="cancel-location-edit" class="btn btn-secondary"
+                                onclick="UI.cancelLocationEdit()">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="inventory-list" class="activity-list">
+                <!-- Locations will be injected here -->
+            </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="reports" class="page hidden">
+            <h2 class="mb-1" style="font-size: 1.5rem;">Performance Insights</h2>
+            <div id="report-summary">
+                <!-- Data will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-page="dashboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item" data-page="manage-stacks">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="7" height="7" x="3" y="3" rx="1" />
+                <rect width="7" height="7" x="14" y="3" rx="1" />
+                <rect width="7" height="7" x="14" y="14" rx="1" />
+                <rect width="7" height="7" x="3" y="14" rx="1" />
+            </svg>
+            <span>Stacks</span>
+        </a>
+        <a href="#" class="nav-item" data-page="inventory">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>Locations</span>
+        </a>
+        <a href="#" class="nav-item" data-page="reports">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+            </svg>
+            <span>Reports</span>
+        </a>
+    </nav>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>
