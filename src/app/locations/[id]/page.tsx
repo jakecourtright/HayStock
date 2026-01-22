@@ -1,0 +1,122 @@
+import { auth } from "@/lib/auth";
+import pool from "@/lib/db";
+import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
+async function getLocationWithInventory(locationId: string, userId: string) {
+    const client = await pool.connect();
+    try {
+        // Get location details
+        const locationResult = await client.query(
+            'SELECT * FROM locations WHERE id = $1 AND user_id = $2',
+            [locationId, userId]
+        );
+
+        if (locationResult.rows.length === 0) {
+            return null;
+        }
+
+        const location = locationResult.rows[0];
+
+        // Get inventory by stack at this location
+        const inventoryResult = await client.query(`
+            SELECT 
+                s.id,
+                s.name,
+                s.commodity,
+                s.quality,
+                COALESCE(SUM(
+                    CASE 
+                        WHEN t.type IN ('production', 'purchase') THEN t.amount
+                        WHEN t.type = 'sale' THEN -t.amount
+                        ELSE 0
+                    END
+                ), 0) as current_stock
+            FROM stacks s
+            LEFT JOIN transactions t ON t.stack_id = s.id AND t.location_id = $1
+            WHERE s.user_id = $2
+            GROUP BY s.id, s.name, s.commodity, s.quality
+            HAVING COALESCE(SUM(
+                CASE 
+                    WHEN t.type IN ('production', 'purchase') THEN t.amount
+                    WHEN t.type = 'sale' THEN -t.amount
+                    ELSE 0
+                END
+            ), 0) != 0
+            ORDER BY s.name ASC
+        `, [locationId, userId]);
+
+        return {
+            ...location,
+            stacks: inventoryResult.rows
+        };
+    } finally {
+        client.release();
+    }
+}
+
+export default async function LocationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const session = await auth();
+    if (!session?.user?.id) redirect("/api/auth/signin");
+
+    const { id } = await params;
+    const location = await getLocationWithInventory(id, session.user.id);
+
+    if (!location) {
+        notFound();
+    }
+
+    const totalStock = location.stacks.reduce((sum: number, s: any) => sum + parseFloat(s.current_stock), 0);
+    const percentUsed = Math.min(100, Math.round((totalStock / location.capacity) * 100));
+
+    return (
+        <div>
+            <div className="flex items-center gap-4 mb-6">
+                <Link href="/locations" className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                    <ArrowLeft size={20} />
+                </Link>
+                <div>
+                    <h1 className="text-xl font-bold">{location.name}</h1>
+                    <p className="text-sm text-slate-400">
+                        {totalStock.toLocaleString()} / {location.capacity.toLocaleString()} {location.unit} ({percentUsed}% full)
+                    </p>
+                </div>
+            </div>
+
+            {location.stacks.length === 0 ? (
+                <div className="glass-card text-center py-12">
+                    <p className="text-slate-400">No stacks currently stored at this location</p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {location.stacks.map((stack: any) => (
+                        <div key={stack.id} className="glass-card p-5">
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 className="text-lg font-semibold">{stack.name}</h3>
+                                    <span className="text-sm text-emerald-400 font-semibold uppercase">
+                                        {stack.commodity}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <span className="text-xs text-slate-400 block">STOCK HERE</span>
+                                    <span className="text-lg font-semibold">
+                                        {parseFloat(stack.current_stock).toLocaleString()} Bales
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-xs text-slate-400 block">QUALITY</span>
+                                    <span className="text-lg font-semibold">{stack.quality || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
