@@ -17,49 +17,73 @@
   --error: #ef4444;
 }
 
-/* Sunset Theme (Default) */
+/* Sunset Theme (Default) - Deep Navy & Coral */
 :root[data-theme="sunset"] {
-  --bg-deep: #355C7D;
-  --bg-surface: #6C5B7B;
-  --primary: #C06C84;
-  --primary-light: #F67280;
-  --primary-glow: rgba(192, 108, 132, 0.4);
-  --accent: #F8B195;
-  --text-main: #F8B195;
-  --text-dim: #F67280;
-  --glass-bg: rgba(53, 92, 125, 0.8);
-  --glass-border: rgba(248, 177, 149, 0.12);
-  --glass-blur: blur(20px);
+  --bg-deep: #1e293b;
+  /* Much darker navy slate */
+  --bg-surface: #334155;
+  /* Lighter slate for cards */
+  --primary: #F43F5E;
+  /* Vivid Rose */
+  --primary-light: #FB7185;
+  /* Soft Rose */
+  --primary-glow: rgba(244, 63, 94, 0.5);
+  --accent: #FFD4C1;
+  /* Pale Peach */
+  --text-main: #F8FAFC;
+  /* Off-white for readability */
+  --text-dim: #94A3B8;
+  /* Muted slate text */
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(248, 250, 252, 0.1);
+  --glass-blur: blur(24px);
+  --error: #fb7185;
 }
 
-/* Forest Theme */
+/* Forest Theme - Deep Woods & Neon */
 :root[data-theme="forest"] {
-  --bg-deep: #594F4F;
-  --bg-surface: #547980;
-  --primary: #45ADA8;
-  --primary-light: #9DE0AD;
-  --primary-glow: rgba(69, 173, 168, 0.4);
-  --accent: #E5FCC2;
-  --text-main: #E5FCC2;
-  --text-dim: #9DE0AD;
-  --glass-bg: rgba(89, 79, 79, 0.8);
-  --glass-border: rgba(229, 252, 194, 0.12);
-  --glass-blur: blur(20px);
+  --bg-deep: #1A2F25;
+  /* Very deep forest green */
+  --bg-surface: #2C4A3E;
+  /* Lighter moss green */
+  --primary: #4ADE80;
+  /* Neon Green */
+  --primary-light: #86EFAC;
+  /* Soft Green */
+  --primary-glow: rgba(74, 222, 128, 0.4);
+  --accent: #ECFCCB;
+  /* Lime Cream */
+  --text-main: #F0FDF4;
+  /* White-green tint */
+  --text-dim: #86EFAC;
+  /* Dim green */
+  --glass-bg: rgba(26, 47, 37, 0.8);
+  --glass-border: rgba(74, 222, 128, 0.2);
+  --glass-blur: blur(24px);
+  --error: #fb7185;
 }
 
-/* Strawberry Theme */
+/* Strawberry Theme - Teal & Red */
 :root[data-theme="strawberry"] {
-  --bg-deep: #83AF9B;
-  --bg-surface: #C8C8A9;
-  --primary: #FE4365;
-  --primary-light: #FC9D9A;
-  --primary-glow: rgba(254, 67, 101, 0.4);
-  --accent: #F9CDAD;
-  --text-main: #FFFFFF;
-  --text-dim: #F9CDAD;
-  --glass-bg: rgba(131, 175, 155, 0.8);
-  --glass-border: rgba(249, 205, 173, 0.2);
-  --glass-blur: blur(20px);
+  --bg-deep: #203838;
+  /* Dark Teal */
+  --bg-surface: #2F5656;
+  /* Lighter Teal */
+  --primary: #FF4D6D;
+  /* Bright Red-Pink */
+  --primary-light: #FF8FA3;
+  /* Soft Pink */
+  --primary-glow: rgba(255, 77, 109, 0.5);
+  --accent: #FFE5D9;
+  /* Peach */
+  --text-main: #FFF0F5;
+  /* Lavender Blush */
+  --text-dim: #FFB3C1;
+  /* Muted Pink */
+  --glass-bg: rgba(32, 56, 56, 0.8);
+  --glass-border: rgba(255, 77, 109, 0.2);
+  --glass-blur: blur(24px);
+  --error: #fb7185;
 }
 
 body {
@@ -74,9 +98,11 @@ body {
 
 /* Glass Card Utility */
 .glass-card {
-  @apply relative overflow-hidden rounded-3xl border p-6 backdrop-blur-xl transition-colors duration-300;
+  @apply relative overflow-hidden rounded-3xl border p-6 transition-all duration-300;
   background: var(--glass-bg);
   border-color: var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .glass-card::before {
@@ -139,13 +165,6 @@ body {
    No, let's just stick to a colored SVG but we can't inject CSS var into data URI.
    
    Alternative: Use `accent-color` or just keep the arrow color neutral or matching one theme.
-   OR: We can use a small colored span next to it?
-   
-   Let's try to simulate the colored arrow by using the --primary-light color.
-   Since we can't put a var() in a data URI, we have to settle for a color that works on both 
-   OR separate classes. 
-   
-   For now, I will use a neutral white arrow which looks good on both dark themes.
 */
 .select-modern {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
@@ -173,9 +192,11 @@ body {
 /* Modern Input Fields */
 .input-modern {
   @apply w-full rounded-xl py-3 px-4 font-medium transition-all duration-200;
-  background: var(--bg-surface);
+  background: rgba(0, 0, 0, 0.2);
+  /* Darker input bg for contrast */
   border: 1px solid var(--glass-border);
   color: var(--text-main);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .input-modern::placeholder {
