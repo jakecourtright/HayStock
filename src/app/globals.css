@@ -47,6 +47,21 @@
   --glass-blur: blur(20px);
 }
 
+/* Strawberry Theme */
+:root[data-theme="strawberry"] {
+  --bg-deep: #83AF9B;
+  --bg-surface: #C8C8A9;
+  --primary: #FE4365;
+  --primary-light: #FC9D9A;
+  --primary-glow: rgba(254, 67, 101, 0.4);
+  --accent: #F9CDAD;
+  --text-main: #FFFFFF;
+  --text-dim: #F9CDAD;
+  --glass-bg: rgba(131, 175, 155, 0.8);
+  --glass-border: rgba(249, 205, 173, 0.2);
+  --glass-blur: blur(20px);
+}
+
 body {
   background-color: var(--bg-deep);
   background-image:

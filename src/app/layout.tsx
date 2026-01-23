@@ -16,7 +16,7 @@ export default function RootLayout({
           <header className="sticky top-0 z-50 border-b bg-[var(--bg-deep)]/80 backdrop-blur-xl" style={{ borderColor: 'var(--glass-border)' }}>
             <div className="container mx-auto px-6 py-4">
               <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--accent)' }}>
-                HayStock
+                HayFlow
               </h1>
             </div>
           </header>
@@ -32,7 +32,6 @@ export default function RootLayout({
               <NavLink href="/" icon={<House size={20} />} label="Home" />
               <NavLink href="/locations" icon={<MapPin size={20} />} label="Locations" />
               <NavLink href="/stacks" icon={<Box size={20} />} label="Stacks" />
-              <NavLink href="/log" icon={<ClipboardList size={20} />} label="Log" />
               <NavLink href="/reports" icon={<BarChart3 size={20} />} label="Reports" />
               <NavLink href="/settings" icon={<Settings size={20} />} label="Settings" />
             </div>

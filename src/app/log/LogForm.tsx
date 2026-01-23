@@ -4,9 +4,29 @@ import { submitTransaction } from "../actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LogForm({ stacks, locations }: { stacks: any[], locations: any[] }) {
+interface LogFormProps {
+    stacks: any[];
+    locations: any[];
+    type?: string;
+}
+
+export default function LogForm({ stacks, locations, type: initialType }: LogFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [selectedType, setSelectedType] = useState(initialType || 'production');
+
+    // If initialType is provided, lock the form to that type
+    const isTypeLocked = !!initialType;
+
+    const getPriceLabel = (type: string) => {
+        switch (type) {
+            case 'production': return 'Production Cost ($/unit)';
+            case 'purchase': return 'Purchase Price ($/unit)';
+            case 'sale': return 'Sale Price ($/unit)';
+            case 'adjustment': return 'Value Adjustment ($/unit)';
+            default: return 'Price / Cost ($/unit)';
+        }
+    };
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -27,9 +47,15 @@ export default function LogForm({ stacks, locations }: { stacks: any[], location
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
-                <div>
+                {/* Type Selection - Hidden if type is locked */}
+                <div className={isTypeLocked ? 'hidden' : ''}>
                     <label className="label-modern">Type</label>
-                    <select name="type" className="select-modern">
+                    <select
+                        name="type"
+                        className="select-modern"
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                    >
                         <option value="production">Production (In)</option>
                         <option value="sale">Sale (Out)</option>
                         <option value="purchase">Purchase (In)</option>
@@ -37,7 +63,11 @@ export default function LogForm({ stacks, locations }: { stacks: any[], location
                         <option value="adjustment">Adjustment</option>
                     </select>
                 </div>
-                <div>
+
+                {/* Hidden input to ensure type is submitted when select is hidden */}
+                {isTypeLocked && <input type="hidden" name="type" value={selectedType} />}
+
+                <div className={isTypeLocked ? 'col-span-2' : ''}>
                     <label className="label-modern">Stack (Product)</label>
                     <select name="stackId" required className="select-modern">
                         <option value="">Select Stack...</option>
@@ -78,7 +108,7 @@ export default function LogForm({ stacks, locations }: { stacks: any[], location
             </div>
 
             <div>
-                <label className="label-modern">Price per Unit ($)</label>
+                <label className="label-modern">{getPriceLabel(selectedType)}</label>
                 <input type="number" name="price" step="0.01" className="input-modern" placeholder="0.00" />
             </div>
 

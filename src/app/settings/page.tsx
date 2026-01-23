@@ -17,8 +17,8 @@ export default function SettingsPage() {
                     <button
                         onClick={() => setTheme("sunset")}
                         className={`relative group rounded-xl p-4 border-2 transition-all duration-200 text-left ${theme === "sunset"
-                                ? "border-[var(--primary)] bg-[var(--bg-deep)]"
-                                : "border-transparent bg-[var(--bg-deep)]/50 hover:bg-[var(--bg-deep)]"
+                            ? "border-[var(--primary)] bg-[var(--bg-deep)]"
+                            : "border-transparent bg-[var(--bg-deep)]/50 hover:bg-[var(--bg-deep)]"
                             }`}
                     >
                         <div className="flex items-center justify-between mb-3">
@@ -37,8 +37,8 @@ export default function SettingsPage() {
                     <button
                         onClick={() => setTheme("forest")}
                         className={`relative group rounded-xl p-4 border-2 transition-all duration-200 text-left ${theme === "forest"
-                                ? "border-[#45ADA8] bg-[#594F4F]"
-                                : "border-transparent bg-[#594F4F]/50 hover:bg-[#594F4F]"
+                            ? "border-[#45ADA8] bg-[#594F4F]"
+                            : "border-transparent bg-[#594F4F]/50 hover:bg-[#594F4F]"
                             }`}
                     >
                         <div className="flex items-center justify-between mb-3">
@@ -50,6 +50,26 @@ export default function SettingsPage() {
                             <div className="w-8 h-8 rounded-full bg-[#45ADA8]" title="Primary"></div>
                             <div className="w-8 h-8 rounded-full bg-[#9DE0AD]" title="Accent"></div>
                             <div className="w-8 h-8 rounded-full bg-[#E5FCC2]" title="Text"></div>
+                        </div>
+                    </button>
+
+                    {/* Strawberry Theme Option */}
+                    <button
+                        onClick={() => setTheme("strawberry")}
+                        className={`relative group rounded-xl p-4 border-2 transition-all duration-200 text-left ${theme === "strawberry"
+                            ? "border-[#FE4365] bg-[#83AF9B]"
+                            : "border-transparent bg-[#83AF9B]/50 hover:bg-[#83AF9B]"
+                            }`}
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="font-bold text-lg" style={{ color: '#F9CDAD' }}>Strawberry</span>
+                            {theme === "strawberry" && <Check className="w-5 h-5 text-[#FE4365]" />}
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#83AF9B]" title="Background"></div>
+                            <div className="w-8 h-8 rounded-full bg-[#FE4365]" title="Primary"></div>
+                            <div className="w-8 h-8 rounded-full bg-[#FC9D9A]" title="Primary Light"></div>
+                            <div className="w-8 h-8 rounded-full bg-[#F9CDAD]" title="Accent"></div>
                         </div>
                     </button>
                 </div>

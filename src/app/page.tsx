@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import pool from "@/lib/db";
+import { Tractor, ShoppingCart, Banknote, Wrench } from 'lucide-react';
 
 async function getStats(userId: string) {
   const client = await pool.connect();
@@ -12,7 +13,7 @@ async function getStats(userId: string) {
       FROM (
         SELECT 
           s.id, 
-          COALESCE(SUM(CASE WHEN t.type IN ('production', 'purchase') THEN t.amount ELSE -t.amount END), 0) as current_stock
+                  COALESCE(SUM(CASE WHEN t.type IN ('production', 'purchase') THEN t.amount ELSE -t.amount END), 0) as current_stock
         FROM stacks s
         LEFT JOIN transactions t ON s.id = t.stack_id
         WHERE s.user_id = $1
@@ -54,16 +55,29 @@ export default async function Dashboard() {
           </div>
           <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Bales on hand</p>
         </div>
-        <div className="glass-card">
-          <span className="label-modern">Actions</span>
-          <div className="flex flex-col gap-2 mt-2">
-            <Link href="/log" className="text-sm font-semibold transition-colors" style={{ color: 'var(--primary-light)' }}>
-              + New Log Entry
-            </Link>
-            <Link href="/locations" className="text-sm font-semibold transition-colors" style={{ color: 'var(--primary-light)' }}>
-              → View Locations
-            </Link>
-          </div>
+        {/* Action Buttons */}
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-4">
+          <Link href="/log?type=production" className="glass-card flex flex-col items-center justify-center py-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[#F8B195]">
+            <Tractor size={32} style={{ color: '#F8B195', marginBottom: '8px' }} />
+            <span className="font-bold text-lg" style={{ color: '#F8B195' }}>Bale</span>
+            <span className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Record Production</span>
+          </Link>
+          <Link href="/log?type=purchase" className="glass-card flex flex-col items-center justify-center py-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[#F67280]">
+            <ShoppingCart size={32} style={{ color: '#F67280', marginBottom: '8px' }} />
+            <span className="font-bold text-lg" style={{ color: '#F67280' }}>Buy</span>
+            <span className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Record Purchase</span>
+          </Link>
+          <Link href="/log?type=sale" className="glass-card flex flex-col items-center justify-center py-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[#C06C84]">
+            <Banknote size={32} style={{ color: '#C06C84', marginBottom: '8px' }} />
+            <span className="font-bold text-lg" style={{ color: '#C06C84' }}>Sell</span>
+            <span className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Record Sale</span>
+          </Link>
+          <Link href="/log?type=adjustment" className="glass-card flex flex-col items-center justify-center py-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[#6C5B7B]">
+            <Wrench size={32} style={{ color: '#6C5B7B', marginBottom: '8px' }} />
+            <span className="font-bold text-lg" style={{ color: '#6C5B7B' }}>Adjust</span>
+            <span className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Fix Inventory</span>
+          </Link>
         </div>
       </div>
 
