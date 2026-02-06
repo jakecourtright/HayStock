@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import pool from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Tractor, ShoppingCart, Banknote, Wrench, MapPin, Package } from "lucide-react";
+import { ArrowLeft, Tractor, ShoppingCart, Banknote, Wrench, MapPin, Package, Pencil } from "lucide-react";
 import { balesToTons, resolveWeight } from "@/lib/units";
 
 async function getTransaction(transactionId: string, orgId: string) {
@@ -73,7 +73,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
             {/* Header */}
             <div className="flex items-center gap-4">
                 <Link
-                    href="/"
+                    href="/transactions"
                     className="p-2 rounded-xl transition-colors"
                     style={{ background: 'var(--bg-surface)' }}
                 >
@@ -92,6 +92,13 @@ export default async function TransactionDetailPage({ params }: { params: Promis
                         })}
                     </p>
                 </div>
+                <Link
+                    href={`/transactions/${id}/edit`}
+                    className="p-2 rounded-xl transition-colors"
+                    style={{ background: 'var(--bg-surface)' }}
+                >
+                    <Pencil size={18} style={{ color: 'var(--text-dim)' }} />
+                </Link>
             </div>
 
             {/* Main Info Card */}

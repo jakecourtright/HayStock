@@ -89,6 +89,97 @@ export async function submitTransaction(formData: FormData) {
     revalidatePath('/inventory');
     revalidatePath('/log');
     revalidatePath('/locations');
+    revalidatePath('/transactions');
+}
+
+export async function updateTransaction(id: string, formData: FormData) {
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) throw new Error("Unauthorized");
+
+    const type = formData.get('type') as string;
+    const stackId = formData.get('stackId');
+    const locationId = formData.get('locationId');
+    const enteredAmount = formData.get('amount');
+    const unit = formData.get('unit') as string || 'bales';
+    const entity = formData.get('entity');
+    const price = formData.get('price');
+
+    if (!stackId || !enteredAmount || !type) {
+        throw new Error("Missing required fields");
+    }
+
+    const client = await pool.connect();
+    try {
+        // Get stack info to get weight per bale for conversion
+        const stackResult = await client.query(
+            'SELECT weight_per_bale, bale_size FROM stacks WHERE id = $1 AND org_id = $2',
+            [stackId, orgId]
+        );
+
+        if (stackResult.rows.length === 0) {
+            throw new Error("Stack not found");
+        }
+
+        const stack = stackResult.rows[0];
+        const weightPerBale = stack.weight_per_bale || getDefaultWeight(stack.bale_size || '3x4');
+
+        // Convert tons to bales if needed
+        let amountInBales = parseFloat(enteredAmount as string);
+        if (unit === 'tons') {
+            amountInBales = tonsToBales(amountInBales, weightPerBale);
+        }
+
+        await client.query(`
+            UPDATE transactions SET
+                type = $1,
+                stack_id = $2,
+                location_id = $3,
+                amount = $4,
+                unit = $5,
+                entity = $6,
+                price = $7
+            WHERE id = $8 AND org_id = $9
+        `, [
+            type,
+            stackId,
+            locationId === 'none' ? null : locationId,
+            amountInBales,
+            'bales',
+            entity,
+            price ? parseFloat(price as string) : 0,
+            id,
+            orgId
+        ]);
+    } finally {
+        client.release();
+    }
+
+    revalidatePath('/');
+    revalidatePath('/inventory');
+    revalidatePath('/transactions');
+    revalidatePath('/locations');
+    redirect(`/transactions/${id}`);
+}
+
+export async function deleteTransaction(id: string) {
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) throw new Error("Unauthorized");
+
+    const client = await pool.connect();
+    try {
+        await client.query(
+            'DELETE FROM transactions WHERE id = $1 AND org_id = $2',
+            [id, orgId]
+        );
+    } finally {
+        client.release();
+    }
+
+    revalidatePath('/');
+    revalidatePath('/inventory');
+    revalidatePath('/transactions');
+    revalidatePath('/locations');
+    redirect('/transactions');
 }
 
 // ============ LOCATION ACTIONS ============

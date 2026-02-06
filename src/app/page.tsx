@@ -121,28 +121,35 @@ export default async function Dashboard() {
 
           {/* Recent Activity */}
           <div>
-            <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--accent)' }}>Recent Activity</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold" style={{ color: 'var(--accent)' }}>Recent Activity</h2>
+              <Link href="/transactions" className="text-sm flex items-center gap-1 hover:opacity-80" style={{ color: 'var(--primary-light)' }}>
+                View All <ArrowRight size={14} />
+              </Link>
+            </div>
             <div className="flex flex-col gap-2">
               {stats.recentActivity.length === 0 ? (
                 <div className="text-center py-8" style={{ color: 'var(--text-dim)' }}>No recent activity found.</div>
               ) : (
                 stats.recentActivity.map((tx: any) => (
-                  <div key={tx.id} className="glass-card flex items-center justify-between py-4 px-5 !rounded-2xl">
-                    <div>
-                      <div className="font-semibold text-sm" style={{ color: 'var(--accent)' }}>
-                        {tx.type === 'production' ? 'Baled' : tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}: {tx.stack_name || 'Unknown Stack'}
+                  <Link key={tx.id} href={`/transactions/${tx.id}`} className="block">
+                    <div className="glass-card flex items-center justify-between py-4 px-5 !rounded-2xl hover:brightness-110 transition-all">
+                      <div>
+                        <div className="font-semibold text-sm" style={{ color: 'var(--accent)' }}>
+                          {tx.type === 'production' ? 'Baled' : tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}: {tx.stack_name || 'Unknown Stack'}
+                        </div>
+                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>
+                          {tx.commodity} • {new Date(tx.date).toLocaleDateString()}
+                        </div>
                       </div>
-                      <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>
-                        {tx.commodity} • {new Date(tx.date).toLocaleDateString()}
+                      <div
+                        className="font-mono font-bold"
+                        style={{ color: tx.type === 'sale' ? '#ef4444' : 'var(--primary-light)' }}
+                      >
+                        {tx.type === 'sale' ? '−' : '+'}{Number(tx.amount).toLocaleString()}
                       </div>
                     </div>
-                    <div
-                      className="font-mono font-bold"
-                      style={{ color: tx.type === 'sale' ? '#ef4444' : 'var(--primary-light)' }}
-                    >
-                      {tx.type === 'sale' ? '−' : '+'}{Number(tx.amount).toLocaleString()}
-                    </div>
-                  </div>
+                  </Link>
                 ))
               )}
             </div>
