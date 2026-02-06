@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "node scripts/migrate.js",
+    "migrate:userid": "node scripts/migrate-user-id.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.10",
