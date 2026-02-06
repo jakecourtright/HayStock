@@ -222,40 +222,42 @@ export default async function StackDetailPage({ params }: { params: Promise<{ id
                 ) : (
                     <div className="space-y-2">
                         {stack.transactions.map((tx: any) => (
-                            <div key={tx.id} className="glass-card p-4">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="p-2 rounded-lg"
-                                            style={{
-                                                background: tx.type === 'sale' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(var(--primary-rgb), 0.2)',
-                                                color: tx.type === 'sale' ? '#ef4444' : 'var(--primary-light)'
-                                            }}
-                                        >
-                                            {getTransactionIcon(tx.type)}
+                            <Link key={tx.id} href={`/transactions/${tx.id}`} className="block">
+                                <div className="glass-card p-4 hover:brightness-110 transition-all">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="p-2 rounded-lg"
+                                                style={{
+                                                    background: tx.type === 'sale' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(var(--primary-rgb), 0.2)',
+                                                    color: tx.type === 'sale' ? '#ef4444' : 'var(--primary-light)'
+                                                }}
+                                            >
+                                                {getTransactionIcon(tx.type)}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold" style={{ color: 'var(--accent)' }}>
+                                                    {getTransactionLabel(tx.type)}
+                                                </p>
+                                                <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                                                    {tx.location_name || 'No location'} {tx.entity && `• ${tx.entity}`}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold" style={{ color: 'var(--accent)' }}>
-                                                {getTransactionLabel(tx.type)}
+                                        <div className="text-right">
+                                            <p
+                                                className="font-bold text-lg"
+                                                style={{ color: tx.type === 'sale' ? '#ef4444' : 'var(--primary-light)' }}
+                                            >
+                                                {tx.type === 'sale' ? '−' : '+'}{parseFloat(tx.amount).toLocaleString()}
                                             </p>
                                             <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                                                {tx.location_name || 'No location'} {tx.entity && `• ${tx.entity}`}
+                                                {new Date(tx.date).toLocaleDateString()}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p
-                                            className="font-bold text-lg"
-                                            style={{ color: tx.type === 'sale' ? '#ef4444' : 'var(--primary-light)' }}
-                                        >
-                                            {tx.type === 'sale' ? '−' : '+'}{parseFloat(tx.amount).toLocaleString()}
-                                        </p>
-                                        <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                                            {new Date(tx.date).toLocaleDateString()}
-                                        </p>
-                                    </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

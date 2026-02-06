@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import pool from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { tonsToBales, getDefaultWeight } from "@/lib/units";
 
 export async function submitTransaction(formData: FormData) {
     const { userId, orgId } = await auth();
@@ -12,17 +13,36 @@ export async function submitTransaction(formData: FormData) {
     const type = formData.get('type') as string;
     const stackId = formData.get('stackId');
     const locationId = formData.get('locationId');
-    const amount = formData.get('amount');
-    const unit = formData.get('unit') || 'bales';
+    const enteredAmount = formData.get('amount');
+    const unit = formData.get('unit') as string || 'bales';
     const entity = formData.get('entity');
     const price = formData.get('price');
 
-    if (!stackId || !amount || !type) {
+    if (!stackId || !enteredAmount || !type) {
         throw new Error("Missing required fields");
     }
 
     const client = await pool.connect();
     try {
+        // Get stack info to get weight per bale for conversion
+        const stackResult = await client.query(
+            'SELECT weight_per_bale, bale_size FROM stacks WHERE id = $1 AND org_id = $2',
+            [stackId, orgId]
+        );
+
+        if (stackResult.rows.length === 0) {
+            throw new Error("Stack not found");
+        }
+
+        const stack = stackResult.rows[0];
+        const weightPerBale = stack.weight_per_bale || getDefaultWeight(stack.bale_size || '3x4');
+
+        // Convert tons to bales if needed (always store as bales)
+        let amountInBales = parseFloat(enteredAmount as string);
+        if (unit === 'tons') {
+            amountInBales = tonsToBales(amountInBales, weightPerBale);
+        }
+
         // Validation for sales: Check if enough stock exists
         if (type === 'sale') {
             if (!locationId || locationId === 'none') {
@@ -41,10 +61,9 @@ export async function submitTransaction(formData: FormData) {
             `, [stackId, locationId]);
 
             const currentStock = parseFloat(inventoryRes.rows[0]?.quantity || '0');
-            const saleAmount = parseFloat(amount as string);
 
-            if (currentStock < saleAmount) {
-                throw new Error(`Insufficient funds. Available: ${currentStock}, Requested: ${saleAmount}`);
+            if (currentStock < amountInBales) {
+                throw new Error(`Insufficient stock. Available: ${currentStock} bales, Requested: ${amountInBales} bales`);
             }
         }
 
@@ -55,8 +74,8 @@ export async function submitTransaction(formData: FormData) {
             type,
             stackId,
             locationId === 'none' ? null : locationId,
-            parseFloat(amount as string),
-            unit,
+            amountInBales, // Always stored in bales
+            'bales', // Always store as bales
             entity,
             price ? parseFloat(price as string) : 0,
             userId,
