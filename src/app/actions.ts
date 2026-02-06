@@ -44,7 +44,6 @@ export async function submitTransaction(formData: FormData) {
             const saleAmount = parseFloat(amount as string);
 
             if (currentStock < saleAmount) {
-                // Formatting number for error message
                 throw new Error(`Insufficient funds. Available: ${currentStock}, Requested: ${saleAmount}`);
             }
         }
@@ -63,9 +62,6 @@ export async function submitTransaction(formData: FormData) {
             userId,
             orgId
         ]);
-    } catch (e) {
-        console.error(e);
-        throw new Error("Failed to submit transaction");
     } finally {
         client.release();
     }
@@ -80,25 +76,25 @@ export async function submitTransaction(formData: FormData) {
 
 export async function createLocation(formData: FormData) {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) throw new Error("Unauthorized");
+    if (!userId) throw new Error("Not authenticated - please sign in");
+    if (!orgId) throw new Error("No organization selected - please select an organization");
 
     const name = formData.get('name') as string;
     const capacity = formData.get('capacity') as string;
     const unit = formData.get('unit') as string || 'bales';
 
-    if (!name || !capacity) {
-        throw new Error("Missing required fields");
-    }
+    if (!name) throw new Error("Location name is required");
+    if (!capacity) throw new Error("Capacity is required");
+
+    const capacityNum = parseInt(capacity);
+    if (isNaN(capacityNum)) throw new Error("Capacity must be a valid number");
 
     const client = await pool.connect();
     try {
         await client.query(`
             INSERT INTO locations (name, capacity, unit, user_id, org_id)
             VALUES ($1, $2, $3, $4, $5)
-        `, [name, parseInt(capacity), unit, userId, orgId]);
-    } catch (e) {
-        console.error(e);
-        throw new Error("Failed to create location");
+        `, [name, capacityNum, unit, userId, orgId]);
     } finally {
         client.release();
     }
@@ -109,25 +105,25 @@ export async function createLocation(formData: FormData) {
 
 export async function updateLocation(id: string, formData: FormData) {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) throw new Error("Unauthorized");
+    if (!userId) throw new Error("Not authenticated - please sign in");
+    if (!orgId) throw new Error("No organization selected - please select an organization");
 
     const name = formData.get('name') as string;
     const capacity = formData.get('capacity') as string;
     const unit = formData.get('unit') as string || 'bales';
 
-    if (!name || !capacity) {
-        throw new Error("Missing required fields");
-    }
+    if (!name) throw new Error("Location name is required");
+    if (!capacity) throw new Error("Capacity is required");
+
+    const capacityNum = parseInt(capacity);
+    if (isNaN(capacityNum)) throw new Error("Capacity must be a valid number");
 
     const client = await pool.connect();
     try {
         await client.query(`
             UPDATE locations SET name = $1, capacity = $2, unit = $3
             WHERE id = $4 AND org_id = $5
-        `, [name, parseInt(capacity), unit, id, orgId]);
-    } catch (e) {
-        console.error(e);
-        throw new Error("Failed to update location");
+        `, [name, capacityNum, unit, id, orgId]);
     } finally {
         client.release();
     }
@@ -139,7 +135,8 @@ export async function updateLocation(id: string, formData: FormData) {
 
 export async function deleteLocation(id: string) {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) throw new Error("Unauthorized");
+    if (!userId) throw new Error("Not authenticated - please sign in");
+    if (!orgId) throw new Error("No organization selected - please select an organization");
 
     const client = await pool.connect();
     try {
@@ -156,9 +153,6 @@ export async function deleteLocation(id: string) {
             'DELETE FROM locations WHERE id = $1 AND org_id = $2',
             [id, orgId]
         );
-    } catch (e) {
-        console.error(e);
-        throw e;
     } finally {
         client.release();
     }
@@ -171,7 +165,8 @@ export async function deleteLocation(id: string) {
 
 export async function createStack(formData: FormData) {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) throw new Error("Unauthorized");
+    if (!userId) throw new Error("Not authenticated - please sign in");
+    if (!orgId) throw new Error("No organization selected - please select an organization");
 
     const name = formData.get('name') as string;
     const commodity = formData.get('commodity') as string;
@@ -179,9 +174,8 @@ export async function createStack(formData: FormData) {
     const quality = formData.get('quality') as string;
     const basePrice = formData.get('basePrice') as string;
 
-    if (!name || !commodity) {
-        throw new Error("Missing required fields");
-    }
+    if (!name) throw new Error("Stack name is required");
+    if (!commodity) throw new Error("Commodity is required");
 
     const client = await pool.connect();
     try {
@@ -189,9 +183,6 @@ export async function createStack(formData: FormData) {
             INSERT INTO stacks (name, commodity, bale_size, quality, base_price, user_id, org_id)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
         `, [name, commodity, baleSize, quality, parseFloat(basePrice || '0'), userId, orgId]);
-    } catch (e) {
-        console.error(e);
-        throw new Error("Failed to create stack");
     } finally {
         client.release();
     }
@@ -202,7 +193,8 @@ export async function createStack(formData: FormData) {
 
 export async function updateStack(id: string, formData: FormData) {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) throw new Error("Unauthorized");
+    if (!userId) throw new Error("Not authenticated - please sign in");
+    if (!orgId) throw new Error("No organization selected - please select an organization");
 
     const name = formData.get('name') as string;
     const commodity = formData.get('commodity') as string;
@@ -210,9 +202,8 @@ export async function updateStack(id: string, formData: FormData) {
     const quality = formData.get('quality') as string;
     const basePrice = formData.get('basePrice') as string;
 
-    if (!name || !commodity) {
-        throw new Error("Missing required fields");
-    }
+    if (!name) throw new Error("Stack name is required");
+    if (!commodity) throw new Error("Commodity is required");
 
     const client = await pool.connect();
     try {
@@ -220,9 +211,6 @@ export async function updateStack(id: string, formData: FormData) {
             UPDATE stacks SET name = $1, commodity = $2, bale_size = $3, quality = $4, base_price = $5
             WHERE id = $6 AND org_id = $7
         `, [name, commodity, baleSize, quality, parseFloat(basePrice || '0'), id, orgId]);
-    } catch (e) {
-        console.error(e);
-        throw new Error("Failed to update stack");
     } finally {
         client.release();
     }
@@ -234,7 +222,8 @@ export async function updateStack(id: string, formData: FormData) {
 
 export async function deleteStack(id: string) {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) throw new Error("Unauthorized");
+    if (!userId) throw new Error("Not authenticated - please sign in");
+    if (!orgId) throw new Error("No organization selected - please select an organization");
 
     const client = await pool.connect();
     try {
@@ -242,9 +231,6 @@ export async function deleteStack(id: string) {
             'DELETE FROM stacks WHERE id = $1 AND org_id = $2',
             [id, orgId]
         );
-    } catch (e) {
-        console.error(e);
-        throw new Error("Failed to delete stack");
     } finally {
         client.release();
     }
@@ -253,4 +239,3 @@ export async function deleteStack(id: string) {
     revalidatePath('/');
     redirect('/stacks');
 }
-
