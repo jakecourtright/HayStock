@@ -1,26 +1,80 @@
 import { auth } from "@clerk/nextjs/server";
-import Link from "next/link";
 import pool from "@/lib/db";
-import { Tractor, ShoppingCart, Banknote, Wrench, ArrowRight } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { Tractor, Banknote } from 'lucide-react';
+import { getDashboardLayout } from "./actions";
+import DashboardGrid from "./dashboard/DashboardGrid";
 
 async function getStats(orgId: string) {
   const client = await pool.connect();
   try {
+    // Total stock (bales)
     const stockRes = await client.query(`
       SELECT 
-        SUM(s.current_stock) as total_stock
-      FROM (
-        SELECT 
-          s.id, 
-                  COALESCE(SUM(CASE WHEN t.type IN ('production', 'purchase') THEN t.amount ELSE -t.amount END), 0) as current_stock
-        FROM stacks s
-        LEFT JOIN transactions t ON s.id = t.stack_id
-        WHERE s.org_id = $1
-        GROUP BY s.id
-      ) s
+        COALESCE(SUM(
+          CASE WHEN t.type IN ('production', 'purchase') THEN t.amount ELSE -t.amount END
+        ), 0) as total_stock
+      FROM transactions t
+      JOIN stacks s ON t.stack_id = s.id
+      WHERE t.org_id = $1
     `, [orgId]);
 
+    // Stock by commodity (converted to tons)
+    const commodityRes = await client.query(`
+      SELECT 
+        s.commodity,
+        COALESCE(SUM(
+          CASE WHEN t.type IN ('production', 'purchase') THEN t.amount ELSE -t.amount END
+        ), 0) as bales,
+        COALESCE(s.weight_per_bale, 1200) as weight_per_bale
+      FROM stacks s
+      LEFT JOIN transactions t ON s.id = t.stack_id
+      WHERE s.org_id = $1
+      GROUP BY s.commodity, s.weight_per_bale
+      HAVING COALESCE(SUM(
+        CASE WHEN t.type IN ('production', 'purchase') THEN t.amount ELSE -t.amount END
+      ), 0) > 0
+      ORDER BY COALESCE(SUM(
+        CASE WHEN t.type IN ('production', 'purchase') THEN t.amount ELSE -t.amount END
+      ), 0) DESC
+    `, [orgId]);
+
+    // Aggregate by commodity name (since multiple stacks of same commodity may have different weights)
+    const commodityMap = new Map<string, number>();
+    for (const row of commodityRes.rows) {
+      const tons = (parseFloat(row.bales) * parseFloat(row.weight_per_bale)) / 2000;
+      const existing = commodityMap.get(row.commodity) || 0;
+      commodityMap.set(row.commodity, existing + tons);
+    }
+    const stockByCommodity = Array.from(commodityMap.entries())
+      .map(([commodity, tons]) => ({ commodity, tons }))
+      .sort((a, b) => b.tons - a.tons);
+
+    // Sales this month ($) — price is $/ton, amount is bales, need to compute revenue
+    // Revenue = bales * (weight_per_bale / 2000) * price_per_ton
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    const salesRes = await client.query(`
+      SELECT 
+        COALESCE(SUM(
+          t.amount * (COALESCE(s.weight_per_bale, 1200)::decimal / 2000) * t.price
+        ), 0) as sales_total
+      FROM transactions t
+      JOIN stacks s ON t.stack_id = s.id
+      WHERE t.org_id = $1 
+        AND t.type = 'sale' 
+        AND t.date >= $2
+    `, [orgId, monthStart]);
+
+    // Bales moved this month (all transaction types)
+    const movedRes = await client.query(`
+      SELECT COALESCE(SUM(t.amount), 0) as bales_moved
+      FROM transactions t
+      WHERE t.org_id = $1 AND t.date >= $2
+    `, [orgId, monthStart]);
+
+    // Recent activity
     const activityRes = await client.query(`
       SELECT t.*, s.name as stack_name, s.commodity
       FROM transactions t
@@ -31,8 +85,11 @@ async function getStats(orgId: string) {
     `, [orgId]);
 
     return {
-      totalStock: stockRes.rows[0]?.total_stock || 0,
-      recentActivity: activityRes.rows
+      totalStock: parseFloat(stockRes.rows[0]?.total_stock) || 0,
+      stockByCommodity,
+      salesThisMonth: parseFloat(salesRes.rows[0]?.sales_total) || 0,
+      balesMovedThisMonth: parseFloat(movedRes.rows[0]?.bales_moved) || 0,
+      recentActivity: activityRes.rows,
     };
   } finally {
     client.release();
@@ -41,7 +98,17 @@ async function getStats(orgId: string) {
 
 export default async function Dashboard() {
   const { orgId } = await auth();
-  const stats = orgId ? await getStats(orgId) : { totalStock: 0, recentActivity: [] };
+
+  const defaultStats = {
+    totalStock: 0,
+    stockByCommodity: [],
+    salesThisMonth: 0,
+    balesMovedThisMonth: 0,
+    recentActivity: [],
+  };
+
+  const stats = orgId ? await getStats(orgId) : defaultStats;
+  const layout = await getDashboardLayout();
 
   return (
     <>
@@ -83,79 +150,7 @@ export default async function Dashboard() {
       </SignedOut>
 
       <SignedIn>
-        <div className="space-y-6">
-          {/* Stats Header - Total Stock */}
-          <div className="glass-card flex items-center justify-between py-6 px-8">
-            <div>
-              <span className="label-modern" style={{ marginBottom: 0 }}>Total Stock</span>
-              <p className="text-sm mt-1" style={{ color: 'var(--text-dim)' }}>Bales on hand</p>
-            </div>
-            <div className="text-5xl font-extrabold" style={{ color: 'var(--primary-light)' }}>
-              {stats.totalStock.toLocaleString()}
-            </div>
-          </div>
-
-          {/* Action Buttons Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <Link href="/log?type=production" className="glass-card flex flex-col items-center justify-center p-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[var(--primary)] aspect-square">
-              <Tractor size={52} style={{ color: 'var(--primary)', marginBottom: '14px' }} />
-              <span className="font-bold text-2xl" style={{ color: 'var(--text-main)' }}>Bale</span>
-              <span className="text-sm mt-1 opacity-80" style={{ color: 'var(--text-dim)' }}>Production</span>
-            </Link>
-            <Link href="/log?type=purchase" className="glass-card flex flex-col items-center justify-center p-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[var(--primary)] aspect-square">
-              <ShoppingCart size={52} style={{ color: 'var(--primary)', marginBottom: '14px' }} />
-              <span className="font-bold text-2xl" style={{ color: 'var(--text-main)' }}>Buy</span>
-              <span className="text-sm mt-1 opacity-80" style={{ color: 'var(--text-dim)' }}>Purchase</span>
-            </Link>
-            <Link href="/log?type=sale" className="glass-card flex flex-col items-center justify-center p-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[var(--primary)] aspect-square">
-              <Banknote size={52} style={{ color: 'var(--primary)', marginBottom: '14px' }} />
-              <span className="font-bold text-2xl" style={{ color: 'var(--text-main)' }}>Sell</span>
-              <span className="text-sm mt-1 opacity-80" style={{ color: 'var(--text-dim)' }}>Sale</span>
-            </Link>
-            <Link href="/log?type=adjustment" className="glass-card flex flex-col items-center justify-center p-6 hover:brightness-110 transition-all active:scale-95 text-center group border-2 border-transparent hover:border-[var(--primary)] aspect-square">
-              <Wrench size={52} style={{ color: 'var(--primary)', marginBottom: '14px' }} />
-              <span className="font-bold text-2xl" style={{ color: 'var(--text-main)' }}>Adjust</span>
-              <span className="text-sm mt-1 opacity-80" style={{ color: 'var(--text-dim)' }}>Inventory</span>
-            </Link>
-          </div>
-
-          {/* Recent Activity */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold" style={{ color: 'var(--accent)' }}>Recent Activity</h2>
-              <Link href="/transactions" className="text-sm flex items-center gap-1 hover:opacity-80" style={{ color: 'var(--primary-light)' }}>
-                View All <ArrowRight size={14} />
-              </Link>
-            </div>
-            <div className="flex flex-col gap-2">
-              {stats.recentActivity.length === 0 ? (
-                <div className="text-center py-8" style={{ color: 'var(--text-dim)' }}>No recent activity found.</div>
-              ) : (
-                stats.recentActivity.map((tx: any) => (
-                  <Link key={tx.id} href={`/transactions/${tx.id}`} className="block">
-                    <div className="glass-card flex items-center justify-between py-4 px-5 !rounded-2xl hover:brightness-110 transition-all">
-                      <div>
-                        <div className="font-semibold text-sm" style={{ color: 'var(--accent)' }}>
-                          {tx.type === 'production' ? 'Baled' : tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}: {tx.stack_name || 'Unknown Stack'}
-                        </div>
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>
-                          {tx.commodity} • {new Date(tx.date).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div
-                        className="font-mono font-bold"
-                        style={{ color: tx.type === 'sale' ? '#ef4444' : 'var(--primary-light)' }}
-                      >
-                        {tx.type === 'sale' ? '−' : '+'}{Number(tx.amount).toLocaleString()}
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-
-        </div>
+        <DashboardGrid stats={stats} layout={layout} />
       </SignedIn>
     </>
   );

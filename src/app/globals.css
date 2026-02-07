@@ -493,3 +493,31 @@ body {
 .progress-bar-warning {
   background: #ef4444;
 }
+
+/* Dashboard configurable cards */
+.dashboard-card {
+  transition: all 0.2s ease;
+}
+
+.dashboard-card-edit {
+  cursor: grab;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  border: 2px dashed transparent;
+  border-color: var(--glass-border);
+}
+
+.dashboard-card-edit:hover {
+  border-color: var(--primary-light);
+}
+
+.dashboard-card-dragging {
+  opacity: 0.4 !important;
+  transform: scale(0.98);
+}
+
+.dashboard-drop-target {
+  border-color: var(--primary) !important;
+  background: rgba(var(--primary-rgb, 100, 100, 255), 0.05);
+  transform: scale(1.01);
+}

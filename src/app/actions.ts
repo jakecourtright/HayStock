@@ -396,3 +396,54 @@ export async function deleteStack(id: string) {
     revalidatePath('/');
     redirect('/stacks');
 }
+
+// ============ DASHBOARD LAYOUT ACTIONS ============
+
+export interface DashboardLayout {
+    order: string[];
+    hidden: string[];
+}
+
+const DEFAULT_LAYOUT: DashboardLayout = {
+    order: ['total-stock', 'stock-by-commodity', 'sales-this-month', 'bales-moved', 'action-cards', 'recent-activity'],
+    hidden: [],
+};
+
+export async function getDashboardLayout(): Promise<DashboardLayout> {
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) return DEFAULT_LAYOUT;
+
+    const client = await pool.connect();
+    try {
+        const result = await client.query(
+            `SELECT preference_value FROM user_preferences 
+             WHERE user_id = $1 AND org_id = $2 AND preference_key = 'dashboard_layout'`,
+            [userId, orgId]
+        );
+        if (result.rows.length > 0) {
+            return result.rows[0].preference_value as DashboardLayout;
+        }
+        return DEFAULT_LAYOUT;
+    } finally {
+        client.release();
+    }
+}
+
+export async function saveDashboardLayout(layout: DashboardLayout) {
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) throw new Error("Unauthorized");
+
+    const client = await pool.connect();
+    try {
+        await client.query(`
+            INSERT INTO user_preferences (user_id, org_id, preference_key, preference_value, updated_at)
+            VALUES ($1, $2, 'dashboard_layout', $3, CURRENT_TIMESTAMP)
+            ON CONFLICT (user_id, org_id, preference_key)
+            DO UPDATE SET preference_value = $3, updated_at = CURRENT_TIMESTAMP
+        `, [userId, orgId, JSON.stringify(layout)]);
+    } finally {
+        client.release();
+    }
+
+    revalidatePath('/');
+}

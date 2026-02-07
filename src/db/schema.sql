@@ -48,3 +48,17 @@ CREATE INDEX IF NOT EXISTS idx_locations_org_id ON locations(org_id);
 CREATE INDEX IF NOT EXISTS idx_stacks_org_id ON stacks(org_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_org_id ON transactions(org_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_stack_location ON transactions(stack_id, location_id);
+
+-- User Preferences (dashboard layout, settings, etc.)
+CREATE TABLE IF NOT EXISTS user_preferences (
+  id SERIAL PRIMARY KEY,
+  user_id VARCHAR(255) NOT NULL,
+  org_id VARCHAR(255) NOT NULL,
+  preference_key VARCHAR(100) NOT NULL,
+  preference_value JSONB NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, org_id, preference_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_preferences_lookup 
+ON user_preferences(user_id, org_id, preference_key);
