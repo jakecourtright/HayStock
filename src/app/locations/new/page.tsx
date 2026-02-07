@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { createLocation } from "@/app/actions";
+import UnitSelect from "@/components/UnitSelect";
 
 export default async function NewLocationPage() {
     const { userId, orgId } = await auth();
@@ -35,10 +36,7 @@ export default async function NewLocationPage() {
                     </div>
                     <div>
                         <label className="label-modern">Unit</label>
-                        <select name="unit" className="select-modern">
-                            <option value="bales">Bales</option>
-                            <option value="tons">Tons</option>
-                        </select>
+                        <UnitSelect name="unit" />
                     </div>
                 </div>
 

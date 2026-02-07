@@ -3,6 +3,7 @@ import pool from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import { updateLocation } from "@/app/actions";
 import DeleteButton from "./DeleteButton";
+import UnitSelect from "@/components/UnitSelect";
 
 async function getLocation(locationId: string, orgId: string) {
     const client = await pool.connect();
@@ -59,10 +60,7 @@ export default async function EditLocationPage({ params }: { params: Promise<{ i
                     </div>
                     <div>
                         <label className="label-modern">Unit</label>
-                        <select name="unit" defaultValue={location.unit} className="select-modern">
-                            <option value="bales">Bales</option>
-                            <option value="tons">Tons</option>
-                        </select>
+                        <UnitSelect name="unit" defaultValue={location.unit} />
                     </div>
                 </div>
 

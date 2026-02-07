@@ -4,6 +4,7 @@ import { updateTransaction, deleteTransaction } from "@/app/actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import CustomSelect from "@/components/CustomSelect";
 
 interface EditTransactionFormProps {
     transaction: {
@@ -68,6 +69,33 @@ export default function EditTransactionForm({ transaction, stacks, locations }: 
         }
     }
 
+    const typeOptions = [
+        { value: 'production', label: 'Production (In)' },
+        { value: 'sale', label: 'Sale (Out)' },
+        { value: 'purchase', label: 'Purchase (In)' },
+        { value: 'adjustment', label: 'Adjustment' },
+    ];
+
+    const stackOptions = [
+        { value: '', label: 'Select Stack...' },
+        ...stacks.map(s => ({ value: String(s.id), label: `${s.name} (${s.commodity})` })),
+    ];
+
+    const locationOptions = [
+        { value: 'none', label: 'None (In Transit / Sold)' },
+        ...locations.map(l => ({ value: String(l.id), label: l.name })),
+    ];
+
+    const unitOptions = [
+        { value: 'bales', label: 'Bales' },
+        { value: 'tons', label: 'Tons' },
+    ];
+
+    const priceUnitOptions = [
+        { value: 'ton', label: '$ / Ton' },
+        { value: 'bale', label: '$ / Bale' },
+    ];
+
     return (
         <>
             <form onSubmit={handleSubmit} className="glass-card space-y-5">
@@ -80,33 +108,23 @@ export default function EditTransactionForm({ transaction, stacks, locations }: 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="label-modern">Type</label>
-                        <select
+                        <CustomSelect
                             name="type"
-                            className="select-modern"
+                            options={typeOptions}
                             value={selectedType}
-                            onChange={(e) => setSelectedType(e.target.value)}
-                        >
-                            <option value="production">Production (In)</option>
-                            <option value="sale">Sale (Out)</option>
-                            <option value="purchase">Purchase (In)</option>
-                            <option value="adjustment">Adjustment</option>
-                        </select>
+                            onChange={setSelectedType}
+                        />
                     </div>
 
                     <div>
                         <label className="label-modern">Stack (Product)</label>
-                        <select
+                        <CustomSelect
                             name="stackId"
                             required
-                            className="select-modern"
+                            options={stackOptions}
                             value={selectedStackId}
-                            onChange={(e) => setSelectedStackId(e.target.value)}
-                        >
-                            <option value="">Select Stack...</option>
-                            {stacks.map(s => (
-                                <option key={s.id} value={s.id}>{s.name} ({s.commodity})</option>
-                            ))}
-                        </select>
+                            onChange={setSelectedStackId}
+                        />
                     </div>
                 </div>
 
@@ -114,17 +132,12 @@ export default function EditTransactionForm({ transaction, stacks, locations }: 
                     <label className="label-modern">
                         {selectedType === 'sale' ? 'Source Location' : 'Destination Location'}
                     </label>
-                    <select
+                    <CustomSelect
                         name="locationId"
-                        className="select-modern"
+                        options={locationOptions}
                         value={selectedLocationId}
-                        onChange={(e) => setSelectedLocationId(e.target.value)}
-                    >
-                        <option value="none">None (In Transit / Sold)</option>
-                        {locations.map(l => (
-                            <option key={l.id} value={l.id}>{l.name}</option>
-                        ))}
-                    </select>
+                        onChange={setSelectedLocationId}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -141,10 +154,11 @@ export default function EditTransactionForm({ transaction, stacks, locations }: 
                     </div>
                     <div>
                         <label className="label-modern">Unit</label>
-                        <select name="unit" className="select-modern" defaultValue="bales">
-                            <option value="bales">Bales</option>
-                            <option value="tons">Tons</option>
-                        </select>
+                        <CustomSelect
+                            name="unit"
+                            options={unitOptions}
+                            defaultValue="bales"
+                        />
                     </div>
                 </div>
 
@@ -173,10 +187,11 @@ export default function EditTransactionForm({ transaction, stacks, locations }: 
                     </div>
                     <div>
                         <label className="label-modern">Price Per</label>
-                        <select name="priceUnit" className="select-modern" defaultValue="ton">
-                            <option value="ton">$ / Ton</option>
-                            <option value="bale">$ / Bale</option>
-                        </select>
+                        <CustomSelect
+                            name="priceUnit"
+                            options={priceUnitOptions}
+                            defaultValue="ton"
+                        />
                     </div>
                 </div>
 

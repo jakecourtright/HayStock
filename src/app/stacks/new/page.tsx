@@ -3,6 +3,7 @@
 import { createStack } from "@/app/actions";
 import { BALE_SIZES, BALE_SIZE_WEIGHTS } from "@/lib/units";
 import { useState } from "react";
+import CustomSelect from "@/components/CustomSelect";
 
 export default function NewStackPage() {
     const [baleSize, setBaleSize] = useState('3x4');
@@ -14,6 +15,29 @@ export default function NewStackPage() {
         // Prefill with default weight for this bale size
         setWeightPerBale(BALE_SIZE_WEIGHTS[newSize] || 1200);
     };
+
+    const commodityOptions = [
+        { value: 'Alfalfa', label: 'Alfalfa' },
+        { value: 'Timothy', label: 'Timothy' },
+        { value: 'Bermuda', label: 'Bermuda' },
+        { value: 'Oat Hay', label: 'Oat Hay' },
+        { value: 'Orchard Grass', label: 'Orchard Grass' },
+        { value: 'Straw', label: 'Straw' },
+        { value: 'Mixed Hay', label: 'Mixed Hay' },
+    ];
+
+    const baleSizeOptions = BALE_SIZES.map(size => ({ value: size, label: size }));
+
+    const qualityOptions = [
+        { value: 'Premium', label: 'Premium' },
+        { value: '#1', label: '#1 (Good)' },
+        { value: 'Feeder', label: 'Feeder / Economy' },
+    ];
+
+    const priceUnitOptions = [
+        { value: 'bale', label: 'Bale' },
+        { value: 'ton', label: 'Ton' },
+    ];
 
     return (
         <div className="max-w-md mx-auto">
@@ -27,30 +51,18 @@ export default function NewStackPage() {
 
                 <div>
                     <label className="label-modern">Commodity</label>
-                    <select name="commodity" className="select-modern">
-                        <option value="Alfalfa">Alfalfa</option>
-                        <option value="Timothy">Timothy</option>
-                        <option value="Bermuda">Bermuda</option>
-                        <option value="Oat Hay">Oat Hay</option>
-                        <option value="Orchard Grass">Orchard Grass</option>
-                        <option value="Straw">Straw</option>
-                        <option value="Mixed Hay">Mixed Hay</option>
-                    </select>
+                    <CustomSelect name="commodity" options={commodityOptions} defaultValue="Alfalfa" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="label-modern">Bale Size</label>
-                        <select
+                        <CustomSelect
                             name="baleSize"
-                            className="select-modern"
+                            options={baleSizeOptions}
                             value={baleSize}
-                            onChange={(e) => handleBaleSizeChange(e.target.value)}
-                        >
-                            {BALE_SIZES.map(size => (
-                                <option key={size} value={size}>{size}</option>
-                            ))}
-                        </select>
+                            onChange={handleBaleSizeChange}
+                        />
                     </div>
                     <div>
                         <label className="label-modern">Weight/Bale (lbs)</label>
@@ -67,11 +79,7 @@ export default function NewStackPage() {
 
                 <div>
                     <label className="label-modern">Quality</label>
-                    <select name="quality" className="select-modern">
-                        <option value="Premium">Premium</option>
-                        <option value="#1">#1 (Good)</option>
-                        <option value="Feeder">Feeder / Economy</option>
-                    </select>
+                    <CustomSelect name="quality" options={qualityOptions} defaultValue="Premium" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -81,15 +89,12 @@ export default function NewStackPage() {
                     </div>
                     <div>
                         <label className="label-modern">Price Per</label>
-                        <select
+                        <CustomSelect
                             name="priceUnit"
-                            className="select-modern"
+                            options={priceUnitOptions}
                             value={priceUnit}
-                            onChange={(e) => setPriceUnit(e.target.value as 'bale' | 'ton')}
-                        >
-                            <option value="bale">Bale</option>
-                            <option value="ton">Ton</option>
-                        </select>
+                            onChange={(val) => setPriceUnit(val as 'bale' | 'ton')}
+                        />
                     </div>
                 </div>
 

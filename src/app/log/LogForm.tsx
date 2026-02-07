@@ -3,6 +3,7 @@
 import { submitTransaction } from "../actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import CustomSelect from "@/components/CustomSelect";
 
 interface LogFormProps {
     stacks: any[];
@@ -75,6 +76,40 @@ export default function LogForm({ stacks, locations, type: initialType, inventor
         }
     }
 
+    const typeOptions = [
+        { value: 'production', label: 'Production (In)' },
+        { value: 'sale', label: 'Sale (Out)' },
+        { value: 'purchase', label: 'Purchase (In)' },
+        { value: 'move', label: 'Move' },
+        { value: 'adjustment', label: 'Adjustment' },
+    ];
+
+    const stackOptions = [
+        { value: '', label: 'Select Stack...' },
+        ...stacks.map(s => ({ value: String(s.id), label: `${s.name} (${s.commodity})` })),
+    ];
+
+    const locationOptions = [
+        { value: 'none', label: 'None (In Transit / Sold)' },
+        ...filteredLocations.map(l => {
+            const stock = isSale && selectedStackId ? getAvailableStock(selectedStackId, l.id) : null;
+            return {
+                value: String(l.id),
+                label: `${l.name}${stock !== null ? ` (Avail: ${stock})` : ''}`,
+            };
+        }),
+    ];
+
+    const unitOptions = [
+        { value: 'bales', label: 'Bales' },
+        { value: 'tons', label: 'Tons' },
+    ];
+
+    const priceUnitOptions = [
+        { value: 'ton', label: '$ / Ton' },
+        { value: 'bale', label: '$ / Bale' },
+    ];
+
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
@@ -86,18 +121,12 @@ export default function LogForm({ stacks, locations, type: initialType, inventor
                 {/* Type Selection - Hidden if type is locked */}
                 <div className={isTypeLocked ? 'hidden' : ''}>
                     <label className="label-modern">Type</label>
-                    <select
-                        name={isTypeLocked ? undefined : "type"}
-                        className="select-modern"
+                    <CustomSelect
+                        name={isTypeLocked ? '_type_display' : 'type'}
+                        options={typeOptions}
                         value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                    >
-                        <option value="production">Production (In)</option>
-                        <option value="sale">Sale (Out)</option>
-                        <option value="purchase">Purchase (In)</option>
-                        <option value="move">Move</option>
-                        <option value="adjustment">Adjustment</option>
-                    </select>
+                        onChange={setSelectedType}
+                    />
                 </div>
 
                 {/* Hidden input to ensure type is submitted when select is hidden */}
@@ -105,42 +134,28 @@ export default function LogForm({ stacks, locations, type: initialType, inventor
 
                 <div className={isTypeLocked ? 'col-span-2' : ''}>
                     <label className="label-modern">Stack (Product)</label>
-                    <select
+                    <CustomSelect
                         name="stackId"
                         required
-                        className="select-modern"
+                        options={stackOptions}
                         value={selectedStackId}
-                        onChange={(e) => {
-                            setSelectedStackId(e.target.value);
+                        onChange={(val) => {
+                            setSelectedStackId(val);
                             setSelectedLocationId(''); // Reset location when stack changes
                         }}
-                    >
-                        <option value="">Select Stack...</option>
-                        {stacks.map(s => (
-                            <option key={s.id} value={s.id}>{s.name} ({s.commodity})</option>
-                        ))}
-                    </select>
+                        placeholder="Select Stack..."
+                    />
                 </div>
             </div>
 
             <div>
                 <label className="label-modern">{isSale ? 'Source Location' : 'Destination Location'}</label>
-                <select
+                <CustomSelect
                     name="locationId"
-                    className="select-modern"
-                    value={selectedLocationId}
-                    onChange={(e) => setSelectedLocationId(e.target.value)}
-                >
-                    <option value="none">None (In Transit / Sold)</option>
-                    {filteredLocations.map(l => {
-                        const stock = isSale && selectedStackId ? getAvailableStock(selectedStackId, l.id) : null;
-                        return (
-                            <option key={l.id} value={l.id}>
-                                {l.name} {stock !== null ? `(Avail: ${stock})` : ''}
-                            </option>
-                        );
-                    })}
-                </select>
+                    options={locationOptions}
+                    value={selectedLocationId || 'none'}
+                    onChange={setSelectedLocationId}
+                />
                 {isSale && filteredLocations.length === 0 && selectedStackId && (
                     <p className="text-red-500 text-sm mt-1">No stock available for this stack.</p>
                 )}
@@ -153,10 +168,11 @@ export default function LogForm({ stacks, locations, type: initialType, inventor
                 </div>
                 <div>
                     <label className="label-modern">Unit</label>
-                    <select name="unit" className="select-modern">
-                        <option value="bales">Bales</option>
-                        <option value="tons">Tons</option>
-                    </select>
+                    <CustomSelect
+                        name="unit"
+                        options={unitOptions}
+                        defaultValue="bales"
+                    />
                 </div>
             </div>
 
@@ -172,10 +188,11 @@ export default function LogForm({ stacks, locations, type: initialType, inventor
                 </div>
                 <div>
                     <label className="label-modern">Price Per</label>
-                    <select name="priceUnit" className="select-modern" defaultValue="ton">
-                        <option value="ton">$ / Ton</option>
-                        <option value="bale">$ / Bale</option>
-                    </select>
+                    <CustomSelect
+                        name="priceUnit"
+                        options={priceUnitOptions}
+                        defaultValue="ton"
+                    />
                 </div>
             </div>
 
