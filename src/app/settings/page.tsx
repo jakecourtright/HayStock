@@ -123,6 +123,24 @@ const THEMES = [
         checkColor: "#0D9488",
         bgPreview: "#F0FDFA",
     },
+    {
+        id: "prairie" as const,
+        name: "Prairie",
+        label: "Light",
+        colors: ["#F3F1EA", "#5B7553", "#6B8F63", "#3B3F2E"],
+        nameColor: "#3B3F2E",
+        checkColor: "#5B7553",
+        bgPreview: "#F3F1EA",
+    },
+    {
+        id: "harvest" as const,
+        name: "Harvest",
+        label: "Light",
+        colors: ["#F5F0E1", "#92702A", "#B8942D", "#3D3322"],
+        nameColor: "#3D3322",
+        checkColor: "#92702A",
+        bgPreview: "#F5F0E1",
+    },
 ];
 
 export default function SettingsPage() {
@@ -148,8 +166,8 @@ export default function SettingsPage() {
                             key={t.id}
                             onClick={() => setTheme(t.id)}
                             className={`relative rounded-xl p-3 border-2 transition-all duration-200 text-left ${theme === t.id
-                                    ? "border-[var(--primary)] scale-[1.02]"
-                                    : "border-transparent hover:border-[var(--glass-border)]"
+                                ? "border-[var(--primary)] scale-[1.02]"
+                                : "border-transparent hover:border-[var(--glass-border)]"
                                 }`}
                             style={{ background: t.bgPreview }}
                         >
@@ -182,8 +200,8 @@ export default function SettingsPage() {
                             key={t.id}
                             onClick={() => setTheme(t.id)}
                             className={`relative rounded-xl p-3 border-2 transition-all duration-200 text-left ${theme === t.id
-                                    ? "border-[var(--primary)] scale-[1.02]"
-                                    : "border-transparent hover:border-[var(--glass-border)]"
+                                ? "border-[var(--primary)] scale-[1.02]"
+                                : "border-transparent hover:border-[var(--glass-border)]"
                                 }`}
                             style={{ background: t.bgPreview }}
                         >

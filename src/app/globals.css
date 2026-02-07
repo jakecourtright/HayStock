@@ -243,9 +243,42 @@
   --error: #DC2626;
 }
 
+/* Prairie - Warm sage & olive (agricultural) */
+:root[data-theme="prairie"] {
+  --bg-deep: #F3F1EA;
+  --bg-surface: #FFFFFF;
+  --primary: #5B7553;
+  --primary-light: #6B8F63;
+  --primary-glow: rgba(91, 117, 83, 0.2);
+  --accent: #3B3F2E;
+  --text-main: #2C2F24;
+  --text-dim: #7C7E6C;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(44, 47, 36, 0.1);
+  --glass-blur: blur(24px);
+  --error: #DC2626;
+}
+
+/* Harvest - Golden wheat & brown earth (agricultural) */
+:root[data-theme="harvest"] {
+  --bg-deep: #F5F0E1;
+  --bg-surface: #FFFDF7;
+  --primary: #92702A;
+  --primary-light: #B8942D;
+  --primary-glow: rgba(146, 112, 42, 0.2);
+  --accent: #3D3322;
+  --text-main: #2A2315;
+  --text-dim: #8C7E6A;
+  --glass-bg: rgba(255, 253, 247, 0.88);
+  --glass-border: rgba(61, 51, 34, 0.1);
+  --glass-blur: blur(24px);
+  --error: #DC2626;
+}
+
 body {
   background-color: var(--bg-deep);
   color: var(--text-main);
+  font-size: 18px;
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
