@@ -25,9 +25,11 @@ export default function RootLayout({
             {/* Header */}
             <header className="sticky top-0 z-50 border-b bg-[var(--bg-deep)]/80 backdrop-blur-xl" style={{ borderColor: 'var(--glass-border)' }}>
               <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--accent)' }}>
-                  HayFlow
-                </h1>
+                <Link href="/" className="hover:opacity-80 transition-opacity">
+                  <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--accent)' }}>
+                    HayFlow
+                  </h1>
+                </Link>
                 <div className="flex items-center gap-4">
                   <SignedIn>
                     <OrganizationSwitcher
@@ -37,6 +39,9 @@ export default function RootLayout({
                         }
                       }}
                     />
+                    <Link href="/settings" className="p-2 rounded-xl hover:bg-[var(--bg-surface)] transition-colors">
+                      <Settings size={20} style={{ color: 'var(--text-dim)' }} />
+                    </Link>
                     <UserButton
                       appearance={{
                         elements: {
@@ -62,7 +67,6 @@ export default function RootLayout({
                   <NavLink href="/locations" icon={<MapPin size={20} />} label="Locations" />
                   <NavLink href="/stacks" icon={<Box size={20} />} label="Stacks" />
                   <NavLink href="/reports" icon={<BarChart3 size={20} />} label="Reports" />
-                  <NavLink href="/settings" icon={<Settings size={20} />} label="Settings" />
                 </div>
               </nav>
             </SignedIn>
